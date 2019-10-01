@@ -25,8 +25,8 @@ hdfs dfs -mv /user/sophie.gallet-dsti/ebook.txt /user/sophie.gallet-dsti/input.t
 *Read directly from HDFS the input.txt file
 hdfs dfs -cat /user/sophie.gallet-dsti/input.txt
 
-*Remove this file
-hdfs dfs -rm /user/sophie.gallet-dsti/input.txt
+*Remove this file (-f to force the delete)
+hdfs dfs -rm -f -skipTrash /user/sophie.gallet-dsti/input.txt
 
 * List your HDFS home directory
 hdfs dfs -ls /user/sophie.gallet-dsti
