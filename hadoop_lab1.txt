@@ -1,0 +1,35 @@
+Hadoop Lab #1
+
+Preliminary:
+- Connect to VPN
+- SSH into hdfs Edge 1
+
+* Download the most frequently downloaded e-book (in plain text utf-8) from project Gutenberg
+curl http://www.gutenberg.org/cache/epub/16328/pg16328.txt -o 'ebook.txt'
+
+* Create a directory called raw inside your HDFS home directory
+hdfs dfs -mkdir /user/sophie.gallet-dsti/raw
+
+* Put the downloaded e-book inside this directory
+hdfs dfs -put ebook.txt /user/sophie.gallet-dsti/raw
+
+(To check what's in raw:)
+hdfs dfs -ls /user/sophie.gallet-dsti/raw
+
+*Create a copy directly inside your HDFS home directory
+hdfs dfs -cp /user/sophie.gallet-dsti/raw/ebook.txt /user/sophie.gallet-dsti
+
+*Rename the copy inside your HDFS home directory to input.txt
+hdfs dfs -mv /user/sophie.gallet-dsti/ebook.txt /user/sophie.gallet-dsti/input.txt
+
+*Read directly from HDFS the input.txt file
+hdfs dfs -cat /user/sophie.gallet-dsti/input.txt
+
+*Remove this file
+hdfs dfs -rm /user/sophie.gallet-dsti/input.txt
+
+* List your HDFS home directory
+hdfs dfs -ls /user/sophie.gallet-dsti
+
+* Retrieve the file from the raw directory from HDFS to the local filesystem and rename it to local.txt
+hdfs dfs -get /user/sophie.gallet-dsti/raw/ebook.txt /home/sophie.gallet-dsti/local.txt
