@@ -1,0 +1,55 @@
+Instructions
+- Read the content of ebook.txt
+- Apply mapper
+- Sort mapper output
+- Apply reducer
+
+# useful doc: https://hadoop.apache.org/docs/r2.7.1/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapredCommands.html#Overview
+
+# Read the content of my book
+cat ebook.txt
+
+# Create the mapper script in python with Linux vi editor
+vi map.y
+
+# map.py takes the input from STDIN and write the results to STDOUT.
+# Results: x lines (as many as there are words) with format 'a_word     1'
+
+# Give permission to execute file only to file owner
+chmod +x map.py
+
+# We use pipes (symbol '|') to choreograph how command-line utilities collaborate.
+# Here we're saying to use cat ebook.txt (which prints the content of the ebook) as input to map.py
+# Great article on pipes: https://www.howtogeek.com/438882/how-to-use-pipes-on-linux/
+cat ebook.txt | /home/sophie.gallet-dsti/map.py
+
+# Create the reducer script in python with Linux vi editor
+vi reducer.py
+
+# Give permission to execute file only to file owner - without that we get a 'Permission denied' error
+chmod +x reducer.py
+
+# We're using a chain of pipes!
+# map.py uses as input cat ebook.tx and its output is sorted numerically(-n) using key#1 (-k1) - words.
+# This is then inputted into our reducer script, and the output of that is sorted numerically using key#2 - counts.
+cat ebook.txt | /home/sophie.gallet-dsti/map.py | sort -k1 -n | /home/sophie.gallet-dsti/reducer.py | sort -k2 -n
+
+#> (...)
+#> of 1536
+#> the 2558
+
+# Same thing with yarn
+yarn jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-streaming.jar \
+  -file /home/sophie.gallet-dsti/map.py \
+  -mapper /home/sophie.gallet-dsti/map.py \
+  -file /home/sophie.gallet-dsti/reducer.py \
+  -reducer /home/sophie.gallet-dsti/reducer.py \
+  -input /user/sophie.gallet-dsti/raw/ebook.txt \
+  -output /user/sophie.gallet-dsti/python-output
+
+hdfs dfs -ls /user/sophie.gallet-dsti/python-output
+#> *_SUCCESS
+#> */part-00000
+
+hdfs dfs -cat /user/sophie.gallet-dsti/python-output/part-00000 | sort -k2 -n
+#> the 2558
