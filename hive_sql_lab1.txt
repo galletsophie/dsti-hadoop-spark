@@ -1,0 +1,46 @@
+# IMDB Queries in Hive
+
+#As usual, first VPN and SSH
+
+#Connect to hive
+beeline -u "jdbc:hive2://zoo-1.au.adaltas.cloud:2181,zoo-2.au.adaltas.cloud:2181,zoo-3.au.adaltas.cloud:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2;" --showDbInPrompt=true
+use dsti;
+
+#Get info on tables
+## List of tables
+show tables;
+
+## Describe columns in specific table
+describe table_name;
+
+# Run Queries
+
+## query1: Number of titles with duration superior than 2 hours.
+SELECT COUNT(*) FROM imdb_title_basics WHERE runtimeminutes > 120;
+
+## query2: Average duration of titles containing the string "world".
+SELECT AVG(runtimeminutes) FROM imdb_title_basics WHERE primaryTitle LIKE ‘%world%’;
+
+## query3: Average rating of titles having the genre "Comedy"
+SELECT AVG(averagerating) FROM imdb_title_ratings
+JOIN imdb_title_basics ON imdb_title_ratings.tconst = imdb_title_basics.tconst
+WHERE array_contains(imdb_title_basics.genres, "Comedy");
+
+## query4: Average rating of titles not having the genre "Comedy"
+SELECT AVG(averagerating) FROM imdb_title_ratings
+JOIN imdb_title_basics ON imdb_title_ratings.tconst = imdb_title_basics.tconst
+WHERE NOT array_contains(imdb_title_basics.genres, "Comedy");
+
+## bonus query: Top 5 movies directed by Tarantino
+
+### explode needs to be attached with LATERAL VIEW
+SELECT imdb_title_basics.primarytitle, imdb_title_ratings.averagerating FROM (
+  SELECT * FROM imdb_title_crew LATERAL VIEW explode(director) exp as ndir
+  ) as exp_crew
+JOIN  imdb_name_basics ON imdb_name_basics.nconst = exp_crew.ndir
+JOIN  imdb_title_basics ON imdb_title_basics.tconst = exp_crew.tconst
+JOIN imdb_title_ratings ON imdb_title_ratings.tconst = imdb_title_basics.tconst
+WHERE imdb_name_basics.primaryname LIKE 'Quentin Tarantino'
+AND titletype = 'movie'
+ORDER BY imdb_title_ratings.averagerating DESC
+LIMIT 5;
